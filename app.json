@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "appShortLink",
+    "slug": "appShortLink",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "appShortLink"
+}
