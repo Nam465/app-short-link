@@ -5,7 +5,16 @@
     "version": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "description": "",
+    "ios": {
+      "bundleIdentifier": "com.namluong.shortlink",
+      "buildNumber": "1.0.0"
+    },
+    "android": {
+      "package": "com.namluong.shortlink",
+      "versionCode": 1
+    }
   },
   "name": "appShortLink"
 }
