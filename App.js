@@ -4,33 +4,51 @@ import { StyleSheet, Text, View, Image } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
+
 /*
 	Screen
 */
-import Launch from './views/Launch'
 import Homepage from './views/Home'
 import Login from './views/Login'
+import Management from './views/Management';
+import Setting from './views/Setting';
 
 const Stack = createStackNavigator()
 
 export default function App() {
 	return (
 		<NavigationContainer>
-			<Stack.Navigator>
-				<Stack.Screen 
-					name="Launch"
-					component={Launch}
-				/>
+			<Stack.Navigator screenOptions={{
+				headerStyle: {
+					backgroundColor: '#EF264B',
+				},
+				headerTintColor: 'white',
+				headerTitleAlign: 'center'
+			}}>
 
-				<Stack.Screen 
-					name="Homepage"
-					component={Homepage}
-					options={{title: 'Hello babe'}}
-				/>
-				<Stack.Screen 
+				<Stack.Screen
 					name="Login"
 					component={Login}
+					options={{
+						headerShown: false
+					}}
 				/>
+				<Stack.Screen
+					name="Homepage"
+					component={Homepage}
+					options={{
+						title: 'Home'
+					}}
+				/>
+				<Stack.Screen 
+					name="Management"
+					component={Management}
+				/>
+				<Stack.Screen 
+					name="Setting"
+					component={Setting}
+				/>
+
 			</Stack.Navigator>
 		</NavigationContainer>
 	);
