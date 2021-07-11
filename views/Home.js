@@ -64,7 +64,7 @@ export default function Homepage(props) {
 
     const navigation = props.navigation
 
-    const [showOutput, setShowOutput] = React.useState(true)
+    const [showOutput, setShowOutput] = React.useState(false)
 
     React.useLayoutEffect(() => {
         navigation.setOptions({
