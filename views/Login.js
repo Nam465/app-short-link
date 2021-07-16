@@ -1,6 +1,16 @@
 import React from 'react';
 import { StyleSheet, View, Image } from 'react-native';
 import { Text, Button } from 'react-native-elements';
+import Icon from 'react-native-vector-icons/AntDesign'
+
+const FbIcon = () => (
+	<Icon 
+		name="facebook-square"
+		color="white"
+		size={24}
+		style={{ marginRight: 12 }}
+	/>
+)
 
 export default function Login(props) {
 
@@ -54,6 +64,7 @@ export default function Login(props) {
 						navigation.navigate('Homepage')
 					}} 
 					title="Login now"
+					icon={FbIcon}
 				/>
 			</View>
 
