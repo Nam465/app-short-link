@@ -1,9 +1,11 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import { StyleSheet, View, Pressable } from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/AntDesign'
 import Icon2 from 'react-native-vector-icons/FontAwesome5'
 import Icon3 from 'react-native-vector-icons/MaterialIcons'
+import AuthContext from '../AuthContext';
 
 const UrlIcon = () => (
     <Icon
@@ -63,8 +65,8 @@ const OpenBrowerIcon = () => (
 export default function Homepage(props) {
 
     const navigation = props.navigation
-
     const [showOutput, setShowOutput] = React.useState(false)
+    const [state, dispatch] = React.useContext(AuthContext)
 
     React.useLayoutEffect(() => {
         navigation.setOptions({

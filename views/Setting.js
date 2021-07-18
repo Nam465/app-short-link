@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, View, Image } from 'react-native';
 import { Text, Button, Avatar, Card } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/AntDesign'
+import AuthContext from '../AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const FbIcon = () => (
 	<Icon
@@ -41,6 +43,19 @@ export default function Setting(props) {
 
 	const navigation = props.navigation
 	const [login, setLogin] = React.useState(true)
+	const [state, dispatch] = React.useContext(AuthContext)
+
+	const signOut = async () => {
+		try {
+			await AsyncStorage.clear()
+			dispatch({ type: 'SIGN_OUT' })
+			navigation.navigate('Login')
+			
+		} catch (error) {
+			console.log(error)
+		}
+
+	}
 
 	return (
 		<View style={styles.container}>
@@ -51,6 +66,11 @@ export default function Setting(props) {
 				icon={FbIcon}
 				buttonStyle={{ marginTop: 64 }}
 			/>}
+
+			<Button 
+				title="Logout"
+				onPress={signOut}
+			/>
 
 
 			<Card
