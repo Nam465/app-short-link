@@ -14,6 +14,23 @@ const API = {
             token: res.data.jwt,
             userName: res.data.user.fullName
         }
+    },
+
+    createLink: async ({ originUrl, expire, optionalKey, userToken }) => {
+        const config = {
+            url: ENV.API_HOST + '/short-link',
+            method: 'post',
+            data: {
+                originUrl,
+                expire,
+                optionalKey
+            }
+        }
+        if (userToken)
+            config.headers = { Authorization: 'Bearer ' + userToken }
+        const res = await axios.request(config)
+
+        return res.data
     }
 }
 

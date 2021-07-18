@@ -1,11 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
-import { StyleSheet, View, Pressable } from 'react-native';
+import { StyleSheet, View, Pressable, Modal, Linking } from 'react-native';
 import { Button, Input, Text } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/AntDesign'
 import Icon2 from 'react-native-vector-icons/FontAwesome5'
 import Icon3 from 'react-native-vector-icons/MaterialIcons'
 import AuthContext from '../AuthContext';
+import * as Clipboard from 'expo-clipboard';
+import { useToast } from "react-native-toast-notifications";
+import API from '../controller/api'
+import QrCode from './QrCode'
 
 const UrlIcon = () => (
     <Icon
@@ -67,6 +71,11 @@ export default function Homepage(props) {
     const navigation = props.navigation
     const [showOutput, setShowOutput] = React.useState(false)
     const [state, dispatch] = React.useContext(AuthContext)
+    const [longLink, setLongLink] = React.useState('')
+    const [shortLink, setShortLink] = React.useState('')
+    const [qrCode, setQrCode] = React.useState(false)
+    const [isLoading, setLoading] = React.useState(false)
+    const toast = useToast()
 
     React.useLayoutEffect(() => {
         navigation.setOptions({
@@ -78,14 +87,16 @@ export default function Homepage(props) {
                         justifyContent: 'center'
                     }}
                 >
-                    <Icon
-                        onPress={() => { navigation.navigate('Management') }}
-                        name='table'
-                        color='white'
-                        size={24}
-                        style={{ marginRight: 16 }}
-                        underlayColor="#333"
-                    />
+                    {state.userToken && (
+                        <Icon
+                            onPress={() => { navigation.navigate('Management') }}
+                            name='table'
+                            color='white'
+                            size={24}
+                            style={{ marginRight: 16 }}
+                            underlayColor="#333"
+                        />
+                    )}
 
                     <Icon
                         onPress={() => { navigation.navigate('Setting') }}
@@ -99,6 +110,50 @@ export default function Homepage(props) {
             }
         })
     }, [navigation])
+
+    const paste = async () => {
+        try {
+            const clipboardData = await Clipboard.getStringAsync()
+            setLongLink(clipboardData)
+            toast.show('Pasted')
+        } catch (error) {
+
+        }
+    }
+
+    const copy = async () => {
+        Clipboard.setString(shortLink)
+        toast.show('Copied')
+    }
+
+    const create = async () => {
+        try {
+            setLoading(true)
+            const shortLink = await API.createLink({
+                originUrl: longLink,
+                expire: null,
+                optionalKey: null,
+                userToken: state.userToken
+            })
+            console.log(0)
+            setShowOutput(true)
+            setShortLink(shortLink.resourceLink)
+
+        } catch (error) {
+            const message = error.message
+            toast.show(message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const openLink = async () => {
+        try {
+            await Linking.openURL(shortLink)
+        } catch (error) {
+            toast.show(error.message)
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -124,7 +179,10 @@ export default function Homepage(props) {
                         Your long link
                     </Text>
                 </View>
-                <Input />
+                <Input
+                    value={longLink}
+                    onChangeText={setLongLink}
+                />
 
                 <View style={{
                     flexDirection: 'row',
@@ -132,7 +190,7 @@ export default function Homepage(props) {
                     width: '100%'
                 }}>
                     <Button
-                        onPress={() => { }}
+                        onPress={() => setQrCode(true)}
                         title="QR"
                         buttonStyle={{
                             marginRight: 12,
@@ -141,7 +199,7 @@ export default function Homepage(props) {
                         icon={QrcodeIcon}
                     />
                     <Button
-                        onPress={() => { }}
+                        onPress={paste}
                         title="Paste"
                         buttonStyle={{
                             backgroundColor: '#00E199'
@@ -152,24 +210,23 @@ export default function Homepage(props) {
 
                 {/* GENERATE SHORT LINK BUTTON */}
                 {showOutput == false &&
-                    <Pressable
-                        onPress={()=>{setShowOutput(true)}}
-                        style={{
+                    <Button
+                        title="Beauti"
+                        onPress={create}
+                        buttonStyle={{
                             width: 200,
                             height: 200,
                             backgroundColor: '#EF264B',
                             borderRadius: 500,
                             alignItems: 'center',
                             justifyContent: 'center',
-                            elevation: 7,
-                            marginTop: 62
+                            marginTop: 62,
                         }}
-                    >
-                        <Text
-                            h2
-                            style={{ color: 'white' }}
-                        >Beauti</Text>
-                    </Pressable>
+                        titleStyle={{
+                            fontSize: 32,
+                        }}
+                        loading={isLoading}
+                    />
                 }
 
                 {/* OUTPUT SERVER RETURN */}
@@ -180,7 +237,8 @@ export default function Homepage(props) {
                         alignItems: 'center',
                         justifyContent: 'flex-start',
                         marginTop: 24
-                    }}>
+                    }}
+                    >
                         <MagicIcon />
                         <Text
                             h4
@@ -189,7 +247,10 @@ export default function Homepage(props) {
                             Beauty and short link
                         </Text>
                     </View>
-                    <Input />
+                    <Input
+                        onChangeText={setShortLink}
+                        value={shortLink}
+                    />
 
                     <View style={{
                         flexDirection: 'row',
@@ -197,7 +258,7 @@ export default function Homepage(props) {
                         width: '100%'
                     }}>
                         <Button
-                            onPress={() => { }}
+                            onPress={openLink}
                             title=""
                             buttonStyle={{
                                 backgroundColor: '#00E199',
@@ -215,8 +276,8 @@ export default function Homepage(props) {
                             icon={QrcodeIcon}
                         />
                         <Button
-                            onPress={() => { }}
-                            title="Paste"
+                            onPress={copy}
+                            title="Copy"
                             buttonStyle={{
                                 backgroundColor: '#00E199'
                             }}
@@ -230,7 +291,7 @@ export default function Homepage(props) {
                         marginTop: 36
                     }}>
                         <Button
-                            onPress={()=>{setShowOutput(false)}}
+                            onPress={() => { setShowOutput(false); setLongLink('') }}
                             title="Link another"
                             buttonStyle={{
                                 backgroundColor: '#EF264B',
@@ -240,11 +301,22 @@ export default function Homepage(props) {
                         />
                     </View>
                 </>}
-
-
-
-
             </View>
+
+            <Modal
+                animationType="slide"
+                visible={qrCode}
+            >
+                <View
+                    style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}
+                >
+                    <QrCode /> 
+                </View>
+            </Modal>
         </View>
     );
 }

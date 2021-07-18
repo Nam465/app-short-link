@@ -5,7 +5,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthContext from './AuthContext';
-
+import { ToastProvider } from 'react-native-toast-notifications'
+import API from './controller/api';
 
 /*
 	Screen
@@ -89,11 +90,6 @@ export default function App() {
 		bootstrapAsync()
 	}, [])
 
-	React.useEffect(() => {
-		console.log('new', state)
-	}, [state])
-
-
 	if (state.isLoading) {
 		return <Splash />
 	}
@@ -109,48 +105,55 @@ export default function App() {
 
 
 	return (
-
-		<AuthContext.Provider value={[state, dispatch]}>
-			<NavigationContainer>
-				<Stack.Navigator screenOptions={{
-					headerStyle: {
-						backgroundColor: '#EF264B',
-					},
-					headerTintColor: 'white',
-					headerTitleAlign: 'center'
-				}}>
-					{state.userToken ? (
-						<>
-							{Home}
-							<Stack.Screen
-								name="Management"
-								component={Management}
-							/>
-							<Stack.Screen
-								name="Setting"
-								component={Setting}
-							/>
-						</>
-					) : (
-						<>
-							<Stack.Screen
-								name="Login"
-								component={Login}
-								options={{
-									headerShown: false,
-									animationTypeForReplace: state.isSignout ? 'pop' : 'push',
-								}}
-							/>
-							{Home}
-							<Stack.Screen
-								name="Setting"
-								component={Setting}
-							/>
-						</>
-					)}
-				</Stack.Navigator>
-			</NavigationContainer>
-		</AuthContext.Provider>
+		<ToastProvider
+			duration={2500}
+			animationType='zoom-in | slide-in'
+			animationDuration={100}
+			normalColor="#393E46"
+			offset={60}
+		>
+			<AuthContext.Provider value={[state, dispatch]}>
+				<NavigationContainer>
+					<Stack.Navigator screenOptions={{
+						headerStyle: {
+							backgroundColor: '#EF264B',
+						},
+						headerTintColor: 'white',
+						headerTitleAlign: 'center'
+					}}>
+						{state.userToken ? (
+							<>
+								{Home}
+								<Stack.Screen
+									name="Management"
+									component={Management}
+								/>
+								<Stack.Screen
+									name="Setting"
+									component={Setting}
+								/>
+							</>
+						) : (
+							<>
+								<Stack.Screen
+									name="Login"
+									component={Login}
+									options={{
+										headerShown: false,
+										animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+									}}
+								/>
+								{Home}
+								<Stack.Screen
+									name="Setting"
+									component={Setting}
+								/>
+							</>
+						)}
+					</Stack.Navigator>
+				</NavigationContainer>
+			</AuthContext.Provider>
+		</ToastProvider>
 
 	);
 }
