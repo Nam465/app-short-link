@@ -155,6 +155,11 @@ export default function Homepage(props) {
         }
     }
 
+    const onQrScanned = data => {
+        setQrCode(false)
+        setLongLink(data)
+    }
+
     return (
         <View style={styles.container}>
 
@@ -307,15 +312,10 @@ export default function Homepage(props) {
                 animationType="slide"
                 visible={qrCode}
             >
-                <View
-                    style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}
-                >
-                    <QrCode /> 
-                </View>
+                <QrCode 
+                    onClose={() => setQrCode(false)}
+                    onQrScanned={onQrScanned}
+                />
             </Modal>
         </View>
     );
