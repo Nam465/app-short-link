@@ -14,65 +14,51 @@ const FbIcon = () => (
 	/>
 )
 
-const USER = {
-	avatar: 'https://cdn.fakercloud.com/avatars/teddyzetterlund_128.jpg	',
-	fullName: 'Jennifer Harris',
-	email: 'Holden_Feest@yahoo.com'
-}
-
-const User = ({ user }) => {
-	return <View
-		style={{
-			alignItems: 'center'
-		}}
-	>
-		<Avatar
-			rounded
-			source={{ uri: user.avatar }}
-			size='large'
-		/>
-		<Text
-			h4
-			style={{ marginTop: 12 }}
-		>{user.fullName}</Text>
-		<Text h5>{user.email}</Text>
-	</View>
-}
-
 export default function Setting(props) {
 
 	const navigation = props.navigation
-	const [login, setLogin] = React.useState(true)
+	const [loading, setLoading] = React.useState(true)
+	const [login, setLogin] = React.useState(false)
 	const [state, dispatch] = React.useContext(AuthContext)
+	const [user, setUser] = React.useState(null)
+	const [onLogin, setOnLogin] = React.useState(false)
 
 	const signOut = async () => {
 		try {
 			await AsyncStorage.clear()
 			dispatch({ type: 'SIGN_OUT' })
 			navigation.navigate('Login')
-			
+
 		} catch (error) {
 			console.log(error)
 		}
 
 	}
 
+	React.useEffect(() => {
+		if (state.userToken) {
+			setLogin(true)
+		}
+		else {
+			setLogin(false)
+		}
+		setLoading(false)
+
+	}, [])
+
+	const loginNow = () => {
+		navigation.navigate('Login')
+	}
+
+	if (loading) {
+		return (
+			<Text></Text>
+		)
+	}
+
+
 	return (
 		<View style={styles.container}>
-			{login && <User user={USER} />}
-
-			{!login && <Button
-				title="Login now"
-				icon={FbIcon}
-				buttonStyle={{ marginTop: 64 }}
-			/>}
-
-			<Button 
-				title="Logout"
-				onPress={signOut}
-			/>
-
-
 			<Card
 				containerStyle={{
 					borderRadius: 6,
@@ -85,6 +71,27 @@ export default function Setting(props) {
 				<Text>V1.0.0</Text>
 				<Text>Contact: namggg462@gmail.com</Text>
 			</Card>
+
+			{login &&
+				<Button
+					title="Logout"
+					loading={onLogin}
+					type="outline"
+					onPress={() => {
+						setOnLogin(true)
+						signOut()
+					}}
+				/>
+			}
+
+			{!login && <Button
+				title="Login now"
+				icon={FbIcon}
+				buttonStyle={{ marginTop: 64 }}
+				onPress={() => {
+					loginNow()
+				}}
+			/>}
 		</View>
 	);
 }

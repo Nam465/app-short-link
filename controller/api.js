@@ -31,6 +31,16 @@ const API = {
         const res = await axios.request(config)
 
         return res.data
+    },
+
+    loadLinkOfUser: async (token, page) => {
+        const config = {
+            url: ENV.API_HOST + '/short-link/all?page=' + page,
+            headers: { Authorization: 'Bearer ' + token }
+        }
+
+        const res = await axios.request(config)
+        return res.data 
     }
 }
 

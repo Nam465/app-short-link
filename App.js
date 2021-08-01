@@ -53,7 +53,6 @@ export default function App() {
 
 					}
 				case 'SIGN_OUT':
-					console.log('in sign out case block')
 					return {
 						...prevState,
 						userToken: null,

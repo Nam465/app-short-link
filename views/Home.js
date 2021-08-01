@@ -5,11 +5,13 @@ import { Button, Input, Text } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/AntDesign'
 import Icon2 from 'react-native-vector-icons/FontAwesome5'
 import Icon3 from 'react-native-vector-icons/MaterialIcons'
+import Icon4 from 'react-native-vector-icons/Ionicons'
 import AuthContext from '../AuthContext';
 import * as Clipboard from 'expo-clipboard';
 import { useToast } from "react-native-toast-notifications";
 import API from '../controller/api'
 import QrCode from './QrCode'
+import QRCodeGenerator from 'react-native-qrcode-svg'
 
 const UrlIcon = () => (
     <Icon
@@ -65,6 +67,26 @@ const OpenBrowerIcon = () => (
     />
 )
 
+const CloseIcon = (props) => (
+    <Button
+        icon={() => (
+            <Icon4
+                name="close"
+                color="white"
+                size={32}
+            />
+        )}
+        title=""
+        onPress={() => props.onPress()}
+        buttonStyle={{
+            backgroundColor: '#0009',
+            width: 60,
+            height: 60,
+            borderRadius: 50,
+        }}
+    />
+)
+
 
 export default function Homepage(props) {
 
@@ -76,6 +98,8 @@ export default function Homepage(props) {
     const [qrCode, setQrCode] = React.useState(false)
     const [isLoading, setLoading] = React.useState(false)
     const toast = useToast()
+    const [qrGenerator, setQrGenerator] = React.useState(false)
+    const [svg, setSvg] = React.useState(null)
 
     React.useLayoutEffect(() => {
         navigation.setOptions({
@@ -158,6 +182,14 @@ export default function Homepage(props) {
     const onQrScanned = data => {
         setQrCode(false)
         setLongLink(data)
+    }
+
+    const dowloadQr = () => {
+        if (!svg) return
+
+        svg.toDataURL(data => {
+            console.log(data)
+        })
     }
 
     return (
@@ -272,7 +304,7 @@ export default function Homepage(props) {
                             icon={OpenBrowerIcon}
                         />
                         <Button
-                            onPress={() => { }}
+                            onPress={() => { setQrGenerator(true) }}
                             title="QR"
                             buttonStyle={{
                                 marginRight: 12,
@@ -312,10 +344,36 @@ export default function Homepage(props) {
                 animationType="slide"
                 visible={qrCode}
             >
-                <QrCode 
+                <QrCode
                     onClose={() => setQrCode(false)}
                     onQrScanned={onQrScanned}
                 />
+            </Modal>
+
+            <Modal
+                animationType="slide"
+                visible={qrGenerator}
+            >
+                <View
+                    style={styles.container}
+                >
+                    <QRCodeGenerator
+                        value={shortLink}
+                        size={250}
+                        getRef={c => { setSvg(c) }}
+                    />
+
+                    <View
+                        style={{
+                            position: 'absolute',
+                            bottom: 50,
+                        }}
+                    >
+                        <CloseIcon
+                            onPress={() => setQrGenerator(false)}
+                        />
+                    </View>
+                </View>
             </Modal>
         </View>
     );

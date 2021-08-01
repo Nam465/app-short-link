@@ -1,25 +1,31 @@
 import React from 'react';
-import { StyleSheet, View, Image, FlatList } from 'react-native';
-import { Text, Button, Input, SearchBar } from 'react-native-elements';
+import { StyleSheet, View, Image, FlatList, RefreshControl } from 'react-native';
+import { Text, Button, Input, SearchBar, BottomSheet } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/AntDesign'
+import * as Clipboard from 'expo-clipboard';
+import { useToast } from "react-native-toast-notifications";
+import API from '../controller/api'
+import AuthContext from '../AuthContext';
+import ENV from '../env'
 
-const QrcodeIcon = () => (
+const CopyIcon = () => (
 	<Icon
-		name="qrcode"
+		name="copy1"
 		color="white"
 		size={24}
 	/>
 )
 
-const data = [
-	{ originUrl: 'https://reactnativeelements.com/docs/input#lefticon', shortUrl: 'http://localhost:3000/pp2jy', _id: 1 },
-	{ originUrl: 'https://reactnativeelements.com/docs/input#lefticon', shortUrl: 'http://localhost:3000/pp2jy', _id: 2 },
-	{ originUrl: 'https://reactnativeelements.com/docs/input#lefticon', shortUrl: 'http://localhost:3000/pp2jy', _id: 3 },
-	{ originUrl: 'https://reactnativeelements.com/docs/input#lefticon', shortUrl: 'http://localhost:3000/pp2jy', _id: 4 },
-	{ originUrl: 'https://reactnativeelements.com/docs/input#lefticon', shortUrl: 'http://localhost:3000/pp2jy', _id: 5 },
-]
-
 const ShortUrl = ({ url }) => {
+
+	const toast = useToast()
+
+	const copy = () => {
+		const shortUrl = ENV.API_HOST + '/' + url._id
+		Clipboard.setString(shortUrl)
+		toast.show('Copied')
+	}
+
 	return <View
 		style={{
 			borderRadius: 6,
@@ -62,23 +68,21 @@ const ShortUrl = ({ url }) => {
 					}}
 					numberOfLines={1}
 				>
-					{url.shortUrl}
+					/{url._id}
 				</Text>
 			</View>
 			<Button
-				icon={QrcodeIcon}
-				buttonStyle={{ 
-					backgroundColor: '#00E199',
-					marginLeft: 16
-				}}
-			/>
-			<Button
-				title="Copy"
+				icon={CopyIcon}
 				buttonStyle={{
 					backgroundColor: '#00E199',
-					marginLeft: 8,
+					marginLeft: 16,
+					width: 40,
+					height: 40,
+					borderRadius: 50,
 				}}
+				onPress={copy}
 			/>
+
 		</View>
 
 	</View>
@@ -88,8 +92,51 @@ export default function Management(props) {
 
 	const navigation = props.navigation
 
-	const [urls, setUrls] = React.useState(data)
+	const [urls, setUrls] = React.useState([])
 	const [search, setSearch] = React.useState('')
+	const [totalPages, setTotalPages] = React.useState(0)
+	const [currentPages, setCurrentPages] = React.useState(0)
+	const [refreshing, setRefreshing] = React.useState(false)
+	const [state, dispatch] = React.useContext(AuthContext)
+
+	React.useEffect(() => {
+		loadPageZero()
+	}, [])
+
+	const loadPageZero = async () => {
+		const data = await API.loadLinkOfUser(
+			state.userToken,
+			0
+		)
+
+		setUrls(data.items)
+		setTotalPages(data.totalPages)
+		setCurrentPages(data.currentPage)
+	}
+
+	const onRefresh = async () => {
+		setRefreshing(true)
+		await loadPageZero()
+		setRefreshing(false)
+	}
+
+	const handleLoadMore = async () => {
+
+		// There is no data left
+		if (currentPages + 1 == totalPages)
+			return
+
+		setRefreshing(true)
+		const data = await API.loadLinkOfUser(
+			state.userToken,
+			Number(currentPages) + 1
+		)
+
+		setUrls([...urls, ...data.items])
+		setTotalPages(data.totalPages)
+		setCurrentPages(data.currentPage)
+		setRefreshing(false)
+	}
 
 	return (
 		<View style={styles.container}>
@@ -113,6 +160,9 @@ export default function Management(props) {
 				data={urls}
 				renderItem={({ item }) => <ShortUrl url={item} />}
 				keyExtractor={item => JSON.stringify(item._id)}
+				refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+				onEndReachedThreshold={0.5}
+				onEndReached={handleLoadMore}
 			/>
 
 			<Button
